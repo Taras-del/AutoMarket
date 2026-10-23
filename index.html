@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>AutoMarket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-black text-white min-h-[100dvh] flex flex-col font-sans overflow-x-hidden antialiased selection:bg-[#ff1e1e] selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full top-0 z-50 px-4 md:px-6 py-3 md:py-4 border-b border-white/10 bg-black/90 backdrop-blur-lg supports-[backdrop-filter]:bg-black/60 pt-[env(safe-area-inset-top,0px)]">
+        <div class="container mx-auto flex justify-between items-center h-12">
+            <a href="#" onclick="showAllCars()" class="flex items-center gap-2 z-50 relative">
+                <div class="bg-[#ff1e1e] p-1.5 md:p-2 rounded-lg shadow-[0_0_15px_rgba(255,30,30,0.4)] flex items-center justify-center">
+                    <i class="fa-solid fa-car text-white text-sm md:text-base"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight">Auto<span class="text-[#ff1e1e]">Market</span></h1>
+            </a>
+            
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-400">
+                <button onclick="showAllCars()" class="hover:text-white transition p-2">Каталог</button>
+                <button onclick="openAddCarModal()" class="text-[#ff1e1e] hover:text-[#e61a1a] transition p-2">Продати авто</button>
+            </div>
+
+            <!-- Desktop Auth / User -->
+            <div id="authNavContainer" class="hidden md:flex items-center space-x-4 text-sm font-medium"></div>
+
+            <!-- Mobile Menu Toggle -->
+            <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="md:hidden z-50 relative p-2 text-white hover:text-[#ff1e1e] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Меню">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Menu -->
+    <div id="mobileNav" class="fixed inset-0 bg-black/95 z-40 hidden flex-col pt-[calc(80px+env(safe-area-inset-top,0px))] px-6 opacity-0 transition-opacity duration-300 overflow-y-auto">
+        <div class="flex flex-col space-y-6 text-lg font-medium text-gray-300">
+            <button onclick="showAllCars(); toggleMobileMenu();" class="text-left py-3 border-b border-white/5 hover:text-white">Каталог</button>
+            <button onclick="openAddCarModal(); toggleMobileMenu();" class="text-left py-3 border-b border-white/5 text-[#ff1e1e]">Продати авто</button>
+            <div id="mobileAuthNavContainer" class="flex flex-col space-y-6 pt-4"></div>
+        </div>
+    </div>
+
+    <!-- Header & Search -->
+    <header class="relative pt-[calc(100px+env(safe-area-inset-top,0px))] pb-8 md:pb-12 px-4 border-b border-[#1a1a1a]">
+        <div class="container mx-auto relative z-10">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-6 md:mb-8 drop-shadow-2xl text-center">
+                Каталог <span class="text-[#ff1e1e]">автомобілів</span>
+            </h2>
+            
+            <!-- Mobile Filter Toggle -->
+            <button onclick="toggleFilters()" class="md:hidden w-full bg-[#1a1a1a] text-white py-4 rounded-xl mb-4 flex justify-center items-center gap-3 border border-white/10 active:bg-[#222] transition min-h-[48px]">
+                <i class="fa-solid fa-sliders"></i> Фільтри пошуку
+            </button>
+
+            <!-- Filters Panel -->
+            <div id="filterPanel" class="fixed inset-0 bg-black/95 z-50 hidden md:block md:relative md:inset-auto md:bg-[#111111]/90 md:backdrop-blur-xl md:p-6 rounded-none md:rounded-2xl max-w-5xl mx-auto border-0 md:border md:border-white/10 shadow-none md:shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-y-auto md:overflow-visible transition-opacity duration-300 opacity-0 md:opacity-100 pb-[env(safe-area-inset-bottom,0px)]">
+                
+                <div class="flex justify-between items-center p-4 md:hidden border-b border-white/10 bg-[#111] sticky top-0 pt-[env(safe-area-inset-top,0px)] z-10">
+                    <span class="text-lg font-bold">Фільтри</span>
+                    <button onclick="toggleFilters()" class="p-2 text-gray-400 hover:text-white min-w-[44px] min-h-[44px] flex justify-center items-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+
+                <div class="p-4 md:p-0 grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="relative">
+                        <select id="brandFilter" class="w-full p-4 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] appearance-none min-h-[48px]">
+                            <option value="">Всі марки</option>
+                            <option value="BMW">BMW</option>
+                            <option value="Audi">Audi</option>
+                            <option value="Toyota">Toyota</option>
+                            <option value="Mercedes">Mercedes</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    </div>
+                    
+                    <div class="relative">
+                        <select id="bodyFilter" class="w-full p-4 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] appearance-none min-h-[48px]">
+                            <option value="">Всі типи кузова</option>
+                            <option value="Седан">Седан</option>
+                            <option value="Позашляховик">Позашляховик</option>
+                            <option value="Універсал">Універсал</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    </div>
+
+                    <input type="number" id="priceMin" placeholder="Ціна від ($)" class="w-full p-4 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                    <input type="number" id="priceMax" placeholder="Ціна до ($)" class="w-full p-4 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                    
+                    <div class="flex gap-2 mt-4 md:mt-0">
+                        <button onclick="applyMobileFilters()" class="flex-1 bg-[#ff1e1e] rounded-xl text-white font-semibold hover:bg-[#e61a1a] transition active:scale-[0.98] min-h-[48px]">Знайти</button>
+                        <button onclick="clearFilters()" class="px-6 bg-[#1a1a1a] border border-white/10 rounded-xl text-gray-400 hover:text-white transition active:bg-[#222] min-h-[48px]" title="Очистити" aria-label="Очистити фільтри"><i class="fa-solid fa-eraser"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Tabs -->
+            <div id="userTabs" class="hidden justify-start md:justify-center gap-2 mt-6 md:mt-8 overflow-x-auto pb-2 snap-x hide-scrollbar px-2 md:px-0">
+                <button onclick="showAllCars()" class="snap-start whitespace-nowrap px-6 py-2.5 rounded-full bg-[#1a1a1a] border border-[#ff1e1e] text-white font-medium min-h-[44px]">Всі авто</button>
+                <button onclick="showFavorites()" class="snap-start whitespace-nowrap px-6 py-2.5 rounded-full bg-[#111] border border-white/10 text-gray-400 hover:text-white font-medium min-h-[44px]">Обране</button>
+                <button onclick="showMyAds()" class="snap-start whitespace-nowrap px-6 py-2.5 rounded-full bg-[#111] border border-white/10 text-gray-400 hover:text-white font-medium min-h-[44px]">Мої оголошення</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-8 md:py-12 px-4 flex-grow mb-[env(safe-area-inset-bottom,0px)]">
+        <div id="carsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"></div>
+    </main>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/95 z-[60] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300 pb-[env(safe-area-inset-bottom,0px)]">
+        <div class="bg-[#111111] p-6 md:p-8 rounded-2xl w-full max-w-md border border-[#1a1a1a] relative shadow-2xl max-h-[90dvh] overflow-y-auto">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-500 hover:text-[#ff1e1e] transition min-w-[44px] min-h-[44px] flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 id="authTitle" class="text-2xl md:text-3xl font-bold mb-6 text-white text-center">Увійти</h3>
+            <form id="authForm" onsubmit="submitAuth(event)" class="space-y-4">
+                <div id="nameField" class="hidden space-y-1.5">
+                    <label class="block text-sm text-gray-400 pl-1">Ім'я</label>
+                    <input type="text" class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm text-gray-400 pl-1">Email</label>
+                    <input type="email" inputmode="email" required class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-sm text-gray-400 pl-1">Пароль</label>
+                    <input type="password" required class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-[#ff1e1e] py-3.5 md:py-3 rounded-xl text-white font-bold hover:bg-[#e61a1a] active:scale-[0.98] transition mt-2 min-h-[48px]">Увійти</button>
+            </form>
+            <div class="mt-6 text-center text-sm text-gray-400">
+                <span id="authSwitchText">Немає акаунта?</span> 
+                <button onclick="toggleAuthMode()" id="authSwitchBtn" class="text-[#ff1e1e] hover:underline p-2">Зареєструватися</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Car Modal -->
+    <div id="addCarModal" class="fixed inset-0 bg-black/95 z-[60] hidden items-center justify-center p-0 md:p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-[#111111] h-full md:h-auto md:max-h-[90dvh] w-full max-w-2xl border-0 md:border md:border-[#1a1a1a] md:rounded-2xl relative flex flex-col pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
+            
+            <div class="flex justify-between items-center p-4 md:p-6 border-b border-white/10 flex-shrink-0">
+                <h3 id="addCarTitle" class="text-xl md:text-2xl font-bold text-white">Нове оголошення</h3>
+                <button onclick="closeAddCarModal()" class="text-gray-500 hover:text-[#ff1e1e] transition min-w-[44px] min-h-[44px] flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="overflow-y-auto p-4 md:p-6 flex-grow overscroll-contain">
+                <form id="addCarForm" onsubmit="submitCar(event)" oninput="saveDraft()" class="space-y-5">
+                    <input type="hidden" id="editCarId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="block text-sm text-gray-400 pl-1">Марка <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select id="carBrand" required class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] appearance-none min-h-[48px]">
+                                    <option value="BMW">BMW</option>
+                                    <option value="Audi">Audi</option>
+                                    <option value="Toyota">Toyota</option>
+                                    <option value="Mercedes">Mercedes</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm text-gray-400 pl-1">Модель <span class="text-red-500">*</span></label>
+                            <input type="text" id="carModel" required placeholder="Наприклад: X5" class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm text-gray-400 pl-1">Рік <span class="text-red-500">*</span></label>
+                            <input type="number" id="carYear" inputmode="numeric" required min="1950" max="2026" class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm text-gray-400 pl-1">Ціна ($) <span class="text-red-500">*</span></label>
+                            <input type="number" id="carPrice" inputmode="numeric" required min="100" class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm text-gray-400 pl-1">Кузов <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select id="carBody" required class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] appearance-none min-h-[48px]">
+                                    <option value="Седан">Седан</option>
+                                    <option value="Позашляховик">Позашляховик</option>
+                                    <option value="Універсал">Універсал</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-sm text-gray-400 pl-1">Пробіг (тис. км) <span class="text-red-500">*</span></label>
+                            <input type="number" id="carMileage" inputmode="numeric" required min="0" class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-sm text-gray-400 pl-1">Опис автомобіля</label>
+                        <textarea id="carDesc" rows="4" class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] resize-none"></textarea>
+                    </div>
+                    <div class="space-y-1.5 pb-4">
+                        <label class="block text-sm text-gray-400 pl-1">URL Фото (оптимізація)</label>
+                        <input type="url" id="carImg" placeholder="https://..." class="w-full p-3.5 md:p-3 bg-[#1a1a1a] border border-white/10 rounded-xl text-white outline-none focus:border-[#ff1e1e] min-h-[48px]">
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-4 md:p-6 border-t border-white/10 flex flex-col md:flex-row gap-3 bg-[#111] flex-shrink-0">
+                <button type="button" onclick="clearDraft()" class="order-2 md:order-1 w-full md:w-1/3 bg-[#1a1a1a] border border-white/10 py-3.5 md:py-3 rounded-xl text-white hover:bg-gray-800 transition min-h-[48px]">Очистити</button>
+                <button type="submit" form="addCarForm" id="submitCarBtn" class="order-1 md:order-2 w-full md:w-2/3 bg-[#ff1e1e] py-3.5 md:py-3 rounded-xl text-white font-bold hover:bg-[#e61a1a] active:scale-[0.98] transition min-h-[48px]">Опублікувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 bg-black/95 z-[60] hidden items-end md:items-center justify-center p-0 md:p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-[#111111] w-full h-[85dvh] md:h-auto md:max-h-[90dvh] md:max-w-4xl border-t md:border border-[#1a1a1a] rounded-t-2xl md:rounded-2xl flex flex-col md:flex-row overflow-hidden relative shadow-2xl pb-[env(safe-area-inset-bottom,0px)]">
+            <button onclick="closeDetails()" class="absolute top-3 right-3 text-white bg-black/60 backdrop-blur-md p-2 rounded-full hover:text-[#ff1e1e] transition z-20 min-w-[40px] min-h-[40px] flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="w-full md:w-1/2 h-64 md:h-auto flex-shrink-0 relative">
+                <img id="detImg" src="" class="w-full h-full object-cover" loading="lazy">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent md:hidden"></div>
+            </div>
+            
+            <div class="w-full md:w-1/2 p-5 md:p-8 flex flex-col overflow-y-auto overscroll-contain">
+                <h3 id="detTitle" class="text-2xl md:text-3xl font-bold mb-1 text-white"></h3>
+                <p class="text-3xl md:text-4xl font-black text-[#ff1e1e] mb-6" id="detPrice"></p>
+                
+                <div class="grid grid-cols-2 gap-y-4 text-sm text-gray-400 mb-6 bg-[#1a1a1a] p-4 rounded-xl border border-white/5">
+                    <div>Рік: <span class="text-white font-medium block md:inline" id="detYear"></span></div>
+                    <div>Кузов: <span class="text-white font-medium block md:inline" id="detBody"></span></div>
+                    <div>Пробіг: <span class="text-white font-medium block md:inline" id="detMileage"></span> <span class="text-xs">тис. км</span></div>
+                    <div>Власник: <span class="text-white font-medium block md:inline truncate" id="detOwner"></span></div>
+                </div>
+                
+                <div class="mb-6 md:mb-8 flex-grow">
+                    <p class="text-gray-400 text-sm mb-2 font-medium">Опис:</p>
+                    <p class="text-gray-200 text-sm leading-relaxed" id="detDesc"></p>
+                </div>
+
+                <button class="w-full bg-[#ff1e1e] py-4 rounded-xl text-white font-bold hover:bg-[#e61a1a] active:scale-[0.98] transition mt-auto min-h-[48px] shadow-[0_0_20px_rgba(255,30,30,0.2)]" onclick="alert('У демо-версії функція зв\'язку вимкнена.')">
+                    <i class="fa-solid fa-phone mr-2"></i> Зв'язатися
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
