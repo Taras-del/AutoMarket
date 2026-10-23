@@ -1,13 +1,11 @@
-// script.js
-
 // ==========================================
-// ІНІЦІАЛІЗАЦІЯ ДАНИХ (LocalStorage)
+// ІНІЦІАЛІЗАЦІЯ ДАНИХ (LocalStorage) - З реальними фотографіями
 // ==========================================
 const defaultCars = [
-    { id: 1, ownerId: 'demo@mail.com', brand: 'BMW', model: 'X5 M-Sport', price: 45000, year: 2020, body: 'Позашляховик', img: 'https://placehold.co/600x400/111/ff1e1e?text=BMW+X5', mileage: 45, desc: 'Ідеальний стан, перший власник.' },
-    { id: 2, ownerId: 'demo@mail.com', brand: 'Audi', model: 'A6 Quattro', price: 38000, year: 2019, body: 'Седан', img: 'https://placehold.co/600x400/111/ff1e1e?text=Audi+A6', mileage: 60, desc: 'Офіціал, сервісна історія.' },
-    { id: 3, ownerId: 'other@mail.com', brand: 'Toyota', model: 'Camry Hybrid', price: 25000, year: 2021, body: 'Седан', img: 'https://placehold.co/600x400/111/ff1e1e?text=Toyota+Camry', mileage: 30, desc: 'Економний та надійний.' },
-    { id: 4, ownerId: 'other@mail.com', brand: 'Mercedes', model: 'GLE 450', price: 58000, year: 2022, body: 'Позашляховик', img: 'https://placehold.co/600x400/111/ff1e1e?text=Mercedes+GLE', mileage: 15, desc: 'Нова гума, пройдено ТО.' }
+    { id: 1, ownerId: 'demo@mail.com', brand: 'BMW', model: 'X5 M-Sport', price: 45000, year: 2020, body: 'Позашляховик', img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=800&auto=format&fit=crop', mileage: 45, desc: 'Ідеальний стан, перший власник.' },
+    { id: 2, ownerId: 'demo@mail.com', brand: 'Audi', model: 'A6 Quattro', price: 38000, year: 2019, body: 'Седан', img: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?q=80&w=800&auto=format&fit=crop', mileage: 60, desc: 'Офіціал, сервісна історія.' },
+    { id: 3, ownerId: 'other@mail.com', brand: 'Toyota', model: 'Camry Hybrid', price: 25000, year: 2021, body: 'Седан', img: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fd?q=80&w=800&auto=format&fit=crop', mileage: 30, desc: 'Економний та надійний.' },
+    { id: 4, ownerId: 'other@mail.com', brand: 'Mercedes', model: 'GLE 450', price: 58000, year: 2022, body: 'Позашляховик', img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=800&auto=format&fit=crop', mileage: 15, desc: 'Нова гума, пройдено ТО.' }
 ];
 
 const initStorage = (key, defaultData) => {
@@ -24,13 +22,38 @@ let favoritesData = JSON.parse(localStorage.getItem('favoritesData'));
 let currentViewMode = 'all';
 
 // ==========================================
+// АНІМАЦІЯ ЛІЧИЛЬНИКІВ СТАТИСТИКИ
+// ==========================================
+function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 4); 
+        obj.innerHTML = Math.floor(easeProgress * (end - start) + start).toLocaleString('en-US');
+        if (progress < 1) window.requestAnimationFrame(step);
+    };
+    window.requestAnimationFrame(step);
+}
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.querySelectorAll('.stat-number').forEach(counter => {
+                animateValue(counter, 0, parseInt(counter.getAttribute('data-target')), 2500);
+            });
+            observer.unobserve(entry.target); 
+        }
+    });
+}, { threshold: 0.5 });
+
+// ==========================================
 // МОБІЛЬНЕ МЕНЮ ТА ФІЛЬТРИ
 // ==========================================
 let isMobileMenuOpen = false;
 function toggleMobileMenu() {
     const nav = document.getElementById('mobileNav');
     const icon = document.querySelector('#mobileMenuBtn i');
-    
     isMobileMenuOpen = !isMobileMenuOpen;
     
     if (isMobileMenuOpen) {
@@ -43,10 +66,7 @@ function toggleMobileMenu() {
         nav.classList.add('opacity-0');
         icon.classList.replace('fa-xmark', 'fa-bars');
         document.body.style.overflow = '';
-        setTimeout(() => {
-            nav.classList.add('hidden');
-            nav.classList.remove('flex');
-        }, 300);
+        setTimeout(() => { nav.classList.add('hidden'); nav.classList.remove('flex'); }, 300);
     }
 }
 
@@ -66,10 +86,11 @@ function toggleFilters() {
 function applyMobileFilters() {
     filterCars();
     if(window.innerWidth < 768) toggleFilters();
+    document.getElementById('carsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ==========================================
-// АВТОРИЗАЦІЯ
+// АВТОРИЗАЦІЯ ТА UI
 // ==========================================
 const authModal = document.getElementById('authModal');
 let currentAuthMode = 'login';
@@ -86,7 +107,7 @@ function updateAuthUIState() {
     
     const loggedOutHTML = `
         <button onclick="openAuthModal('login'); if(window.innerWidth<768)toggleMobileMenu();" class="text-left md:text-center text-gray-300 hover:text-white transition py-2 md:py-0">Увійти</button>
-        <button onclick="openAuthModal('register'); if(window.innerWidth<768)toggleMobileMenu();" class="text-center bg-[#ff1e1e] px-6 py-3 md:py-2 rounded-lg text-white hover:bg-[#e61a1a] transition mt-2 md:mt-0">Зареєструватися</button>
+        <button onclick="openAuthModal('register'); if(window.innerWidth<768)toggleMobileMenu();" class="text-center bg-[#ef4444] px-6 py-3 md:py-2.5 rounded-lg text-white hover:bg-red-600 transition mt-2 md:mt-0 font-medium shadow-lg">Зареєструватися</button>
     `;
 
     if (currentUser) {
@@ -140,15 +161,11 @@ function closeAuthModal() {
     setTimeout(() => { 
         authModal.classList.add('hidden'); 
         authModal.classList.remove('flex'); 
-        if(!document.querySelector('#mobileNav.flex') && !document.querySelector('#addCarModal.flex')) {
-            document.body.style.overflow = '';
-        }
+        if(!document.querySelector('#mobileNav.flex')) document.body.style.overflow = '';
     }, 300);
 }
 
-function toggleAuthMode() {
-    openAuthModal(currentAuthMode === 'login' ? 'register' : 'login');
-}
+function toggleAuthMode() { openAuthModal(currentAuthMode === 'login' ? 'register' : 'login'); }
 
 function submitAuth(e) {
     e.preventDefault();
@@ -179,20 +196,20 @@ function logout() {
 }
 
 // ==========================================
-// ФІЛЬТРИ ТА ВІДОБРАЖЕННЯ
+// ВІДОБРАЖЕННЯ ТА ФІЛЬТРАЦІЯ
 // ==========================================
 function updateTabsUI() {
     if(!currentUser) return;
     const buttons = document.querySelectorAll('#userTabs button');
     buttons.forEach(btn => {
-        btn.classList.replace('bg-[#1a1a1a]', 'bg-[#111]');
-        btn.classList.replace('border-[#ff1e1e]', 'border-white/10');
+        btn.classList.replace('bg-[#111111]', 'bg-[#111111]/50');
+        btn.classList.replace('border-[#ef4444]', 'border-white/5');
         btn.classList.replace('text-white', 'text-gray-400');
     });
 
     let activeIndex = currentViewMode === 'all' ? 0 : currentViewMode === 'favorites' ? 1 : 2;
-    buttons[activeIndex].classList.replace('bg-[#111]', 'bg-[#1a1a1a]');
-    buttons[activeIndex].classList.replace('border-white/10', 'border-[#ff1e1e]');
+    buttons[activeIndex].classList.replace('bg-[#111111]/50', 'bg-[#111111]');
+    buttons[activeIndex].classList.replace('border-white/5', 'border-[#ef4444]');
     buttons[activeIndex].classList.replace('text-gray-400', 'text-white');
 }
 
@@ -222,7 +239,6 @@ function filterCars() {
                (!priceMin || car.price >= parseInt(priceMin)) &&
                (!priceMax || car.price <= parseInt(priceMax));
     });
-
     renderCars(filtered);
 }
 
@@ -239,91 +255,78 @@ function clearFilters() {
 // ==========================================
 function renderCars(cars) {
     const grid = document.getElementById('carsGrid');
-    
     if(cars.length === 0) {
         grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 px-4 text-center">
-            <div class="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-car-side text-gray-500 text-2xl"></i></div>
+            <div class="w-16 h-16 bg-[#111111] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-car-side text-gray-500 text-2xl"></i></div>
             <p class="text-gray-400 text-lg">За вашим запитом нічого не знайдено.</p>
-            ${currentViewMode === 'all' ? `<button onclick="clearFilters()" class="text-[#ff1e1e] mt-2 underline">Скинути фільтри</button>` : ''}
         </div>`;
         return;
     }
 
     const userFavs = currentUser && favoritesData[currentUser.email] ? favoritesData[currentUser.email] : [];
-    
-    // Використання DocumentFragment для оптимізації рендерингу (зменшення reflows)
     const fragment = document.createDocumentFragment();
 
     cars.forEach(car => {
         const isFav = userFavs.includes(car.id);
-        const favIconClass = isFav ? 'fa-solid text-[#ff1e1e]' : 'fa-regular text-white drop-shadow-md';
-        
+        const favIconClass = isFav ? 'fa-solid text-[#ef4444]' : 'fa-regular text-white drop-shadow-md';
         let actionBtns = '';
+        
         if (currentUser && car.ownerId === currentUser.email) {
             actionBtns = `
                 <div class="absolute top-3 left-3 flex gap-2 z-10">
-                    <button onclick="editCar(${car.id}); event.stopPropagation();" class="bg-black/60 backdrop-blur-md p-2 rounded-full text-blue-400 hover:text-blue-300 border border-white/10 min-w-[36px] min-h-[36px]" aria-label="Редагувати"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCar(${car.id}); event.stopPropagation();" class="bg-black/60 backdrop-blur-md p-2 rounded-full text-red-500 hover:text-red-400 border border-white/10 min-w-[36px] min-h-[36px]" aria-label="Видалити"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="editCar(${car.id}); event.stopPropagation();" class="bg-black/60 backdrop-blur-md p-2 rounded-full text-blue-400 hover:text-blue-300 border border-white/10 min-w-[36px] min-h-[36px]"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteCar(${car.id}); event.stopPropagation();" class="bg-black/60 backdrop-blur-md p-2 rounded-full text-[#ef4444] hover:text-red-400 border border-white/10 min-w-[36px] min-h-[36px]"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
         }
 
         const div = document.createElement('div');
-        div.className = "bg-[#111] rounded-2xl overflow-hidden border border-[#1a1a1a] card-hover flex flex-col relative group cursor-pointer active:bg-[#151515]";
+        div.className = "bg-[#111111] rounded-2xl overflow-hidden border border-white/5 card-hover flex flex-col relative group cursor-pointer";
         div.onclick = () => showDetails(car.id);
         
         div.innerHTML = `
             ${actionBtns}
-            <button onclick="toggleFavorite(${car.id}); event.stopPropagation();" class="absolute top-3 right-3 bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 z-10 transition hover:bg-black/60 min-w-[40px] min-h-[40px] flex items-center justify-center" aria-label="В обране">
+            <button onclick="toggleFavorite(${car.id}); event.stopPropagation();" class="absolute top-3 right-3 bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 z-10 transition hover:bg-black/60 min-w-[40px] min-h-[40px] flex items-center justify-center">
                 <i class="${favIconClass} fa-heart text-lg"></i>
             </button>
-            <div class="relative w-full pt-[65%] sm:pt-[60%] bg-[#1a1a1a]">
+            <div class="relative w-full pt-[65%] sm:pt-[60%] bg-black">
                 <img src="${car.img}" alt="${car.brand} ${car.model}" loading="lazy" class="absolute inset-0 w-full h-full object-cover">
             </div>
             <div class="p-4 md:p-5 flex flex-col flex-grow">
                 <div class="flex justify-between items-start mb-1.5 gap-2">
                     <h3 class="text-base md:text-lg font-bold leading-tight line-clamp-2">${car.brand} ${car.model}</h3>
-                    <span class="bg-[#1a1a1a] text-xs px-2 py-1 rounded text-gray-300 border border-white/5 flex-shrink-0">${car.year}</span>
+                    <span class="bg-black text-xs px-2 py-1 rounded text-gray-300 border border-white/5 flex-shrink-0">${car.year}</span>
                 </div>
                 <p class="text-xs md:text-sm text-gray-400 mb-4">${car.body} • ${car.mileage} тис. км</p>
                 <div class="mt-auto flex items-center justify-between">
                     <p class="text-lg md:text-xl font-black text-white">$${car.price.toLocaleString()}</p>
-                    <span class="text-[#ff1e1e] text-sm font-semibold group-hover:underline">Деталі <i class="fa-solid fa-arrow-right text-xs ml-1"></i></span>
+                    <span class="text-[#ef4444] text-sm font-semibold group-hover:underline">Деталі <i class="fa-solid fa-arrow-right text-xs ml-1"></i></span>
                 </div>
             </div>
         `;
         fragment.appendChild(div);
     });
-    
     grid.innerHTML = '';
     grid.appendChild(fragment);
 }
 
-// ==========================================
-// ОБРАНЕ
-// ==========================================
 function toggleFavorite(carId) {
     if (!currentUser) return openAuthModal('login');
     if (!favoritesData[currentUser.email]) favoritesData[currentUser.email] = [];
-    
     const favs = favoritesData[currentUser.email];
     const index = favs.indexOf(carId);
-    if (index === -1) favs.push(carId);
-    else favs.splice(index, 1);
-
+    if (index === -1) favs.push(carId); else favs.splice(index, 1);
     localStorage.setItem('favoritesData', JSON.stringify(favoritesData));
     filterCars();
 }
 
 // ==========================================
-// ДЕТАЛІ
+// ДЕТАЛІ ТА CRUD
 // ==========================================
 const detailsModal = document.getElementById('detailsModal');
-
 function showDetails(id) {
     const car = carsData.find(c => c.id === id);
     if(!car) return;
-
     document.getElementById('detImg').src = car.img;
     document.getElementById('detTitle').innerText = `${car.brand} ${car.model}`;
     document.getElementById('detPrice').innerText = `$${car.price.toLocaleString()}`;
@@ -332,7 +335,6 @@ function showDetails(id) {
     document.getElementById('detMileage').innerText = car.mileage;
     document.getElementById('detOwner').innerText = car.ownerId;
     document.getElementById('detDesc').innerText = car.desc || 'Опис відсутній.';
-
     detailsModal.classList.remove('hidden');
     detailsModal.classList.add('flex');
     document.body.style.overflow = 'hidden';
@@ -341,37 +343,22 @@ function showDetails(id) {
 
 function closeDetails() {
     detailsModal.classList.add('opacity-0');
-    setTimeout(() => { 
-        detailsModal.classList.add('hidden'); 
-        detailsModal.classList.remove('flex'); 
-        document.body.style.overflow = ''; 
-    }, 300);
+    setTimeout(() => { detailsModal.classList.add('hidden'); detailsModal.classList.remove('flex'); document.body.style.overflow = ''; }, 300);
 }
 
-// ==========================================
-// CRUD (СТВОРЕННЯ, РЕДАГУВАННЯ, ЧЕРНЕТКА)
-// ==========================================
 const addCarModal = document.getElementById('addCarModal');
-
 function openAddCarModal() {
     if (!currentUser) return openAuthModal('login');
-    
     if(!document.getElementById('editCarId').value) {
         const draft = JSON.parse(localStorage.getItem('carDraft'));
         if(draft) {
-            document.getElementById('carBrand').value = draft.brand || '';
-            document.getElementById('carModel').value = draft.model || '';
-            document.getElementById('carYear').value = draft.year || '';
-            document.getElementById('carPrice').value = draft.price || '';
-            document.getElementById('carBody').value = draft.body || '';
-            document.getElementById('carMileage').value = draft.mileage || '';
-            document.getElementById('carDesc').value = draft.desc || '';
-            document.getElementById('carImg').value = draft.img || '';
+            ['Brand', 'Model', 'Year', 'Price', 'Body', 'Mileage', 'Desc', 'Img'].forEach(field => {
+                document.getElementById('car' + field).value = draft[field.toLowerCase()] || '';
+            });
         }
         document.getElementById('addCarTitle').innerText = 'Нове оголошення';
         document.getElementById('submitCarBtn').innerText = 'Опублікувати';
     }
-
     addCarModal.classList.remove('hidden');
     addCarModal.classList.add('flex');
     document.body.style.overflow = 'hidden';
@@ -381,26 +368,17 @@ function openAddCarModal() {
 function closeAddCarModal() {
     addCarModal.classList.add('opacity-0');
     setTimeout(() => { 
-        addCarModal.classList.add('hidden'); 
-        addCarModal.classList.remove('flex'); 
-        document.body.style.overflow = ''; 
-        document.getElementById('addCarForm').reset();
-        document.getElementById('editCarId').value = '';
+        addCarModal.classList.add('hidden'); addCarModal.classList.remove('flex'); 
+        document.body.style.overflow = ''; document.getElementById('addCarForm').reset(); document.getElementById('editCarId').value = '';
     }, 300);
 }
 
 function saveDraft() {
     if(document.getElementById('editCarId').value) return;
-    const draft = {
-        brand: document.getElementById('carBrand').value,
-        model: document.getElementById('carModel').value,
-        year: document.getElementById('carYear').value,
-        price: document.getElementById('carPrice').value,
-        body: document.getElementById('carBody').value,
-        mileage: document.getElementById('carMileage').value,
-        desc: document.getElementById('carDesc').value,
-        img: document.getElementById('carImg').value
-    };
+    const draft = {};
+    ['Brand', 'Model', 'Year', 'Price', 'Body', 'Mileage', 'Desc', 'Img'].forEach(field => {
+        draft[field.toLowerCase()] = document.getElementById('car' + field).value;
+    });
     localStorage.setItem('carDraft', JSON.stringify(draft));
 }
 
@@ -413,18 +391,11 @@ function clearDraft() {
 function editCar(id) {
     const car = carsData.find(c => c.id === id);
     if(!car) return;
-    
     document.getElementById('editCarId').value = car.id;
-    document.getElementById('carBrand').value = car.brand;
-    document.getElementById('carModel').value = car.model;
-    document.getElementById('carYear').value = car.year;
-    document.getElementById('carPrice').value = car.price;
-    document.getElementById('carBody').value = car.body;
-    document.getElementById('carMileage').value = car.mileage;
-    document.getElementById('carDesc').value = car.desc || '';
-    document.getElementById('carImg').value = car.img;
-
-    document.getElementById('addCarTitle').innerText = 'Редагування оголошення';
+    ['Brand', 'Model', 'Year', 'Price', 'Body', 'Mileage', 'Desc', 'Img'].forEach(field => {
+        document.getElementById('car' + field).value = car[field.toLowerCase()] || '';
+    });
+    document.getElementById('addCarTitle').innerText = 'Редагування';
     document.getElementById('submitCarBtn').innerText = 'Зберегти зміни';
     openAddCarModal();
 }
@@ -432,41 +403,35 @@ function editCar(id) {
 function submitCar(e) {
     e.preventDefault();
     const editId = document.getElementById('editCarId').value;
-    
     const carData = {
-        brand: document.getElementById('carBrand').value,
-        model: document.getElementById('carModel').value,
-        price: parseInt(document.getElementById('carPrice').value),
-        year: parseInt(document.getElementById('carYear').value),
-        body: document.getElementById('carBody').value,
-        mileage: parseInt(document.getElementById('carMileage').value),
+        brand: document.getElementById('carBrand').value, model: document.getElementById('carModel').value,
+        price: parseInt(document.getElementById('carPrice').value), year: parseInt(document.getElementById('carYear').value),
+        body: document.getElementById('carBody').value, mileage: parseInt(document.getElementById('carMileage').value),
         desc: document.getElementById('carDesc').value,
-        img: document.getElementById('carImg').value || `https://placehold.co/600x400/111/ff1e1e?text=${encodeURIComponent(document.getElementById('carBrand').value)}`
+        img: document.getElementById('carImg').value || `https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop`
     };
 
     if (editId) {
         const index = carsData.findIndex(c => c.id == editId);
         carsData[index] = { ...carsData[index], ...carData };
     } else {
-        const newCar = { id: Date.now(), ownerId: currentUser.email, ...carData };
-        carsData.unshift(newCar);
+        carsData.unshift({ id: Date.now(), ownerId: currentUser.email, ...carData });
         clearDraft();
     }
-
     localStorage.setItem('carsData', JSON.stringify(carsData));
     closeAddCarModal();
     showMyAds();
 }
 
 function deleteCar(id) {
-    if(confirm('Ви впевнені, що хочете видалити це оголошення?')) {
+    if(confirm('Видалити оголошення?')) {
         carsData = carsData.filter(c => c.id !== id);
         localStorage.setItem('carsData', JSON.stringify(carsData));
         filterCars();
     }
 }
 
-// Global Event Listeners
+// Загальні Event Listeners
 document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape') {
         if(!authModal.classList.contains('hidden')) closeAuthModal();
@@ -474,10 +439,13 @@ document.addEventListener('keydown', (e) => {
         if(!detailsModal.classList.contains('hidden')) closeDetails();
     }
 });
+[authModal, addCarModal, detailsModal].forEach(modal => {
+    modal.addEventListener('mousedown', (e) => { if (e.target === modal) window['close' + modal.id.charAt(0).toUpperCase() + modal.id.slice(1)](); });
+});
 
-authModal.addEventListener('mousedown', (e) => { if (e.target === authModal) closeAuthModal(); });
-addCarModal.addEventListener('mousedown', (e) => { if (e.target === addCarModal) closeAddCarModal(); });
-detailsModal.addEventListener('mousedown', (e) => { if (e.target === detailsModal) closeDetails(); });
-
-// Init
-document.addEventListener('DOMContentLoaded', updateAuthUIState);
+// Ініціалізація
+document.addEventListener('DOMContentLoaded', () => {
+    updateAuthUIState();
+    const statsSection = document.getElementById('statistics');
+    if (statsSection) observer.observe(statsSection);
+});

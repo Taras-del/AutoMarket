@@ -1,4 +1,3 @@
-/* style.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 html {
@@ -8,7 +7,7 @@ html {
 body {
     font-family: 'Inter', sans-serif;
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: none; /* Запобігає "гумовому" скролу сторінки на iOS */
+    overscroll-behavior-y: none;
 }
 
 input[type="number"]::-webkit-inner-spin-button, 
@@ -16,12 +15,10 @@ input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none; 
     margin: 0; 
 }
-
 input[type="number"] {
     -moz-appearance: textfield;
 }
 
-/* Ховаємо скролбар для мобільного меню вкладок */
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
@@ -31,32 +28,22 @@ input[type="number"] {
 }
 
 .card-hover {
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     will-change: transform;
 }
 
 @media (hover: hover) and (pointer: fine) {
     .card-hover:hover {
         transform: translateY(-4px);
-        border-color: #333; 
+        border-color: #333333; 
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(239, 68, 68, 0.1);
     }
 }
-
 .card-hover:active {
     transform: scale(0.98);
 }
 
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: #000; 
-}
-::-webkit-scrollbar-thumb {
-    background: #222; 
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #ff1e1e; 
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #ef4444; }
